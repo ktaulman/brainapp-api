@@ -69,21 +69,12 @@ app.get('/profile/:id',(req,res)=>{
 
 app.post('/signin',(req,res)=>{
    
-    // bcrypt.compare(req.body.password, "$2a$10$1JSbZDrUnQ5d83G6fmXxYO1IFS4WskUsgAC/Hel50R/axF4ecZnOy", function(err, res) {
-    //     if(err) throw err;
-    //     console.log("first guess",res)
-    // });
-    // bcrypt.compare("veggies", "$2a$10$1JSbZDrUnQ5d83G6fmXxYO1IFS4WskUsgAC/Hel50R/axF4ecZnOy", function(err, res) {
-    //     if(err) throw err;
-    //     console.log("second guess",res)
-    // });
-
-    let found=false;
+     let found=false;
     let {email,password}=req.body
     database.users.forEach(user=>{
         if(user.email===email&&user.password==password){
             found=!false;
-            return res.json("signed-in");
+            return res.json(user);
         }
     })
     if(!found){res.status(400).json("username or password incorrect")}
@@ -108,34 +99,30 @@ app.post ('/register',(req,res)=>{
         entries:0,
         joined:new Date()
     })
-    res.json("registered")
+    // res.json("registered")
+    res.json(database.users[database.users.length-1])
 })
 
-//PUTS-used for updating.  
+
 app.put('/image',(req,res)=>{
+    console.log(req.body)
     const {id}=req.body;
     let found=false;
     database.users.forEach(user=>{
         if(user.id===id){
             found=!false;
             user.entries++;
+            console.log(user.entries)
             return res.json(user.entries);
         }
     })
     if(!found){res.status(404).json("not found")}
 })
 
-//PW HASHING && COMPARISON
 
 
 
-// // Load hash from your password DB.
-// bcrypt.compare("bacon", hash, function(err, res) {
-//     // res == true
-// });
-// bcrypt.compare("veggies", hash, function(err, res) {
-//     // res = false
-// });
+
 
 
 app.listen(3000,()=>{
