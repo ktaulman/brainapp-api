@@ -74,7 +74,6 @@ app.post('/signin',(req,res)=>{
 app.post ('/register',(req,res)=>{
     let {name,email,password}=req.body;
     let isRegistered=db.select('email').from('users').where({email:email}).then(console.log)
-    console.log(isRegistered);
     //create new user 
     const hash = bcrypt.hashSync(password);
     db.transaction(trx=>{
