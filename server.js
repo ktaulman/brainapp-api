@@ -3,6 +3,11 @@ const app=express();
 const bodyParser=require('body-parser')
 const bcrypt=require('bcrypt-nodejs');
 const cors = require('cors');
+const register=require('./controllers/register');
+const signIn=require('./controllers/signin')
+const image=require('./controllers/image')
+const users=require('./controllers/users')
+const profileID=require('./controllers/profileID')
 
 //KNEX
 const db = require('knex')({
@@ -28,86 +33,19 @@ app.use(cors());
 app.get('/',(req,res)=>{
     res.send('this is working')
 })
+app.get("/users",(req,res)=>{users.handleUsers(req,res,db)})
 
-app.get("/users",(req,res)=>{
-   db('users').select('*').then(data=>res.json(data))
-})
-
-app.get('/profile/:id',(req,res)=>{
-    const {id}=req.params;
-
-    db.select('*').from('users').where({id:id}).then(user=>{
-        if(user.length){
-            res.json(user[0])
-        }else{
-            res.status(400).json('not found')
-        }    
-    })
-    .catch(err=>res.status(400).json('Error finding user'));
-})
-
+app.get('/profile/:id',(req,res)=>{profileID.handleProfile(req,res,db)})
 
 //POSTS
+app.post('/signin',(req,res)=>{signIn.handleSignIn(req,res,db,bcrypt)})//dependency injection
 
-app.post('/signin',(req,res)=>{
-    const {email,password}=req.body;
-    db.select('email','hash').from('login')
-    .where('email',email)
-    .then(data=>{
-        const isValid=bcrypt.compareSync(password,data[0].hash);
-        console.log(isValid)
-        if(isValid){
-            db.select('*').from('users')
-            .where({email:email})
-            .then(user=>res.json(user[0]))
-        }
-        else{
-            res.status(400).json('Email or Password is incorrect')
-         }
-        
-        })
-        .catch(err=>res.status(400).json('Not Registered'))
-})
-//
+app.post('/register',(req,res)=>{register.handleRegister(req,res,db,bcrypt)});
 
+app.post('/imageurl',(req,res)=>{image.handleApiCall(req,res)})
 
-app.post ('/register',(req,res)=>{
-    let {name,email,password}=req.body;
-    let isRegistered=db.select('email').from('users').where({email:email}).then(console.log)
-    //create new user 
-    const hash = bcrypt.hashSync(password);
-    db.transaction(trx=>{
-        trx.insert({
-            hash:hash,
-            email:email
-        })
-        .into('login')
-        .returning('email')
-
-        .then(loginEmail=>{
-          return trx('users')
-            .returning('*')
-            .insert({
-                email:loginEmail[0],
-                name:name,
-                joined:new Date()
-            })
-            .then(user=>res.json(user[0]))
-        })
-        .then(trx.commit)
-        .then(trx.rollback)
-    })
-    .catch(err=>res.status(400).json('unable to add'))
-})
-
-
-app.put('/image',(req,res)=>{
-    console.log(req.body)
-    const {id}=req.body;
-    db('users').where({id:id}).increment('entries',1).returning('entries')
-    .then(entries=>res.json(entries[0]))
-    .catch(err=>res.status(400).json('unable to update'))
-})
+//PUTS
+app.put('/image',(req,res)=>{image.handleImage(req,res,db)})
 
 
 app.listen(3000,()=>{
