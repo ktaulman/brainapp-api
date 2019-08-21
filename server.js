@@ -30,6 +30,10 @@ app.use(cors());
 
 
 //GETS
+app.get('/postman',(req,res)=>{
+    res.json("this API is working")
+})
+
 app.get('/',(req,res)=>{
     res.send('this is working')
 })
