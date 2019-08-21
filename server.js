@@ -13,10 +13,8 @@ const profileID=require('./controllers/profileID')
 const db = require('knex')({
     client: 'pg',
     connection: {
-      host : '127.0.0.1',
-      user : 'kevin',
-      password : '',
-      database : 'smart-brain'
+      host : env.process.DATABASE_URL,
+      ssl: true
     }
   });
 
