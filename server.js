@@ -13,7 +13,7 @@ const profileID=require('./controllers/profileID')
 const db = require('knex')({
     client: 'pg',
     connection: {
-      host : env.process.DATABASE_URL,
+      host : process.env.DATABASE_URL,
       ssl: true
     }
   });
